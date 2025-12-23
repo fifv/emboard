@@ -3,12 +3,15 @@ LDFLAGS += -s -w
 LDFLAGS += -X 'main.Mode=prod'
 EXE_NAME = emboard
 
-dist/${EXE_NAME}: web/dist
+dist/${EXE_NAME}: web/dist $(wildcard *.go)
 	GOOS=linux GOARCH=arm go build -ldflags "${LDFLAGS}" -o $@
-dist/${EXE_NAME}-aarch64: web/dist
+dist/${EXE_NAME}-aarch64: web/dist $(wildcard *.go)
 	GOOS=linux GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o $@
+dist/${EXE_NAME}-amd64: web/dist $(wildcard *.go)
+	GOOS=linux GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o $@
 build-arm: dist/${EXE_NAME}
 build-aarch64: dist/${EXE_NAME}-aarch64
+build-amd64: dist/${EXE_NAME}-amd64
 push: build-arm
 # 	adb shell /mnt/UDISK/${EXE_NAME}
 	adb push ./dist/${EXE_NAME} /usr/bin/

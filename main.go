@@ -80,14 +80,19 @@ func main() {
 	 */
 	setStaticWebRouter(r)
 
-	if Mode == "prod" {
-		/**
-		 * must use sudo...
-		 */
-		r.Run(":80")
-	} else {
-		r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	addr := os.Getenv("EB_HOST")
+	if addr == "" {
+		if Mode == "prod" {
+			/**
+			 * must use sudo...
+			 */
+			addr = ":80"
+		} else {
+			addr = ":8080" // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+		}
 	}
+	r.Run(addr)
+
 }
 func listFiles(c *gin.Context) {
 	path := c.DefaultQuery("path", ".") // Default to the current directory if no path is provided
