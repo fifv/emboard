@@ -4,12 +4,12 @@ LDFLAGS += -X 'main.Mode=prod'
 EXE_NAME = emboard
 
 dist/${EXE_NAME}: web/dist
-	GOOS=linux GOARCH=arm go build -ldflags "${LDFLAGS}" -o dist/${EXE_NAME}
+	GOOS=linux GOARCH=arm go build -ldflags "${LDFLAGS}" -o $@
 dist/${EXE_NAME}-aarch64: web/dist
-	GOOS=linux GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o dist/${EXE_NAME}-aarch64
-build: dist/${EXE_NAME}
+	GOOS=linux GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o $@
+build-arm: dist/${EXE_NAME}
 build-aarch64: dist/${EXE_NAME}-aarch64
-push: build
+push: build-arm
 # 	adb shell /mnt/UDISK/${EXE_NAME}
 	adb push ./dist/${EXE_NAME} /usr/bin/
 	scp dist/${EXE_NAME} Ubuntu18:/home/fifv/v853/v853-sdk-test/target/allwinner/v853-vision/busybox-init-base-files/usr/bin 

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import {
     useQuery,
     useMutation,
@@ -37,7 +37,13 @@ export function FileExplorer() {
     const [quickFilter, setQuickFilter] = useState("")
     const queryClient = useQueryClient()
     const [currentPath, setCurrentPath] = useLocalStorage<string[]>('currentPath', [])
-    const [pathHistories, setPathHistories] = useLocalStorage<string[]>('pathHistories', [])
+    const [pathHistories, _setPathHistories] = useLocalStorage<string[]>('pathHistories', [])
+
+    const addNewPathHistory = useCallback((newPath: string[]) => {
+        const newPathString = '/' + newPath.join('/')
+        _setPathHistories((prev) => [...prev.filter((item) => item !== newPathString), newPathString])
+
+    }, [])
 
     const [openedFile, setOpenedFile] = useLocalStorage<OpenedFile | null>('openedFile', null)
     const { isFetching: isFetchingFiles, data: filesResult, refetch: refetchFiles, isSuccess } = useQuery<FilesResult>({
@@ -81,6 +87,11 @@ export function FileExplorer() {
             'PathHistories fixed left-4 bottom-4 w-64 max-h-[50vh] outline-double outline-gray-500/50 z-[60] p-2 rounded',
             'overflow-auto',
         ) }>
+            <div className={ clsx(
+                'text-white/30 font-bold text-sm leading-none flex justify-center items-center',
+            ) }>
+                Histories
+            </div>
             {
                 pathHistories.toReversed().map((pathHistory) => <div className={ clsx(
                     'hover:bg-white/10 active:bg-white/5 cursor-pointer p-1 rounded',
@@ -103,8 +114,9 @@ export function FileExplorer() {
                         <li key={ i } ><a className="p-2 min-w-12 flex justify-center items-center" onClick={ () => {
                             setCurrentPath((prev) => {
                                 const newPath = prev.slice(0, i)
-                                const newPathString = '/' + newPath.join('/')
-                                setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                addNewPathHistory(newPath)
+                                // const newPathString = '/' + newPath.join('/')
+                                // setPathHistories((prev) => [...prev.filter((item) => item !== newPathString), newPathString])
                                 return newPath
                             })
                             // setCurrentPath((prev) => prev.slice(0, i))
@@ -187,7 +199,9 @@ export function FileExplorer() {
                         onClick={ () => {
                             setCurrentPath((prev) => {
                                 const newPath = prev.slice(0, -1)
-                                setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                addNewPathHistory(newPath)
+                                // const newPathString = '/' + newPath.join('/')
+                                // setPathHistories((prev) => [...prev.filter((item) => item !== newPathString), newPathString])
                                 return newPath
                             })
                             // setCurrentPath((prev) => prev.slice(0, -1))
@@ -240,7 +254,9 @@ export function FileExplorer() {
                                                 if (entry.isdir) {
                                                     setCurrentPath((prev) => {
                                                         const newPath = [...prev, entry.name]
-                                                        setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                                        // setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                                        addNewPathHistory(newPath)
+
                                                         return newPath
                                                     })
 
