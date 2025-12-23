@@ -37,6 +37,7 @@ export function FileExplorer() {
     const [quickFilter, setQuickFilter] = useState("")
     const queryClient = useQueryClient()
     const [currentPath, setCurrentPath] = useLocalStorage<string[]>('currentPath', [])
+    const [pathHistories, setPathHistories] = useLocalStorage<string[]>('pathHistories', [])
 
     const [openedFile, setOpenedFile] = useLocalStorage<OpenedFile | null>('openedFile', null)
     const { isFetching: isFetchingFiles, data: filesResult, refetch: refetchFiles, isSuccess } = useQuery<FilesResult>({
@@ -74,13 +75,39 @@ export function FileExplorer() {
         }
     }, [isSuccess])
 
+
+    const PathHistories =
+        <div className={ clsx(
+            'PathHistories fixed left-4 bottom-4 w-64 max-h-[50vh] outline-double outline-gray-500/50 z-[60] p-2 rounded',
+            'overflow-auto',
+        ) }>
+            {
+                pathHistories.toReversed().map((pathHistory) => <div className={ clsx(
+                    'hover:bg-white/10 active:bg-white/5 cursor-pointer p-1 rounded',
+                ) } onClick={ () => {
+                    setCurrentPath(pathHistory.split('/').filter((item) => item))
+                } }>
+                    {/* { '/' + pathHistory.join('/') } */ }
+                    { pathHistory }
+                </div>)
+            }
+
+        </div>
+
+
     return (<>
         <div className="flex items-center gap-4 justify-between sticky top-0 z-40 bg-base-100">
             <div className="mx-8 breadcrumbs  font-mono">
                 <ul>
                     { ['/', ...currentPath].map((item, i) => (
                         <li key={ i } ><a className="p-2 min-w-12 flex justify-center items-center" onClick={ () => {
-                            setCurrentPath((prev) => prev.slice(0, i))
+                            setCurrentPath((prev) => {
+                                const newPath = prev.slice(0, i)
+                                const newPathString = '/' + newPath.join('/')
+                                setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                return newPath
+                            })
+                            // setCurrentPath((prev) => prev.slice(0, i))
                             if (currentPath.length === i) {
                                 refetchFiles()
                             }
@@ -158,7 +185,12 @@ export function FileExplorer() {
                     <tr
                         className={ clsx('cursor-pointer select-none', 'hover') }
                         onClick={ () => {
-                            setCurrentPath((prev) => prev.slice(0, -1))
+                            setCurrentPath((prev) => {
+                                const newPath = prev.slice(0, -1)
+                                setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                return newPath
+                            })
+                            // setCurrentPath((prev) => prev.slice(0, -1))
                         } }
                     >
                         <th></th>
@@ -206,7 +238,12 @@ export function FileExplorer() {
                                         onPointerDown={ (e) => {
                                             if (e.buttons === 0b1) {
                                                 if (entry.isdir) {
-                                                    setCurrentPath((prev) => [...prev, entry.name])
+                                                    setCurrentPath((prev) => {
+                                                        const newPath = [...prev, entry.name]
+                                                        setPathHistories((prev) => [...prev, '/' + newPath.join('/')])
+                                                        return newPath
+                                                    })
+
                                                 } else {
                                                     openFile()
                                                 }
@@ -309,8 +346,12 @@ export function FileExplorer() {
 
             </div>
         }
+
+        { PathHistories }
     </>)
 }
+
+
 
 
 

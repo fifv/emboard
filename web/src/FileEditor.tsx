@@ -14,7 +14,7 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import clsx from "clsx"
 import { useState, useEffect } from "react"
-import { FileReadResult, SERVER } from "./App"
+import { type FileReadResult, SERVER } from "./App"
 
 export default function FileEditor({ path, closeEditor }: {
     path: string

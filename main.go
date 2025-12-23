@@ -43,6 +43,9 @@ func main() {
 	// r.Use(gzip.Gzip(gzip.DefaultCompression))
 	// r.Use(gzip.Gzip(gzip.BestSpeed))
 
+	/**
+	 * Make sure server time is correct, or cache (If-Modified) will always be hit!
+	 */
 	apiGroup := r.Group("/api")
 	{
 		apiGroup.GET("/files", listFiles)
@@ -58,7 +61,7 @@ func main() {
 		apiGroup.POST("/ipc/config", httpPost)
 
 		apiGroup.POST("/net/ip", modifyIp)
-		apiGroup.POST("/systime", setSystime)
+		apiGroup.POST("/systime", setSystime) /* UTC Time */
 		apiGroup.GET("/status", deviceStatus)
 		apiGroup.POST("/reboot", execReboot)
 
@@ -78,6 +81,9 @@ func main() {
 	setStaticWebRouter(r)
 
 	if Mode == "prod" {
+		/**
+		 * must use sudo...
+		 */
 		r.Run(":80")
 	} else {
 		r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
@@ -498,14 +504,25 @@ func setSystime(c *gin.Context) {
 		return
 	}
 
-	output, err := exec.Command("date", "-s", timeStr).CombinedOutput()
+	/**
+	 * the time from client is in UTC
+	 * we set the system time in UTC
+	 * we also need set hwclock to UTC
+	 * and set /etc/localtime to Aisa/Shanghai
+	 * so the system time will be correct after reboot
+	 */
+	output, err := exec.Command("date", "-u", "-s", timeStr).CombinedOutput()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": string(output)})
 		fmt.Println(string(output))
 		return
 	}
 
-	exec.Command("hwclock", "-w").Run()
+	/**
+	 * RTC clock also in UTC
+	 * and after reboot, linux get UTC time from RTC and set system time to UTC
+	 */
+	exec.Command("hwclock", "-u", "-w").Run()
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sync time successfully"})
 

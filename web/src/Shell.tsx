@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import useWebSocket, { ReadyState } from "react-use-websocket"
+import { ReadyState } from "react-use-websocket"
+import useWebSocket from "react-use-websocket"
+// import type useWebSocket from "react-use-websocket"
+
+// oxlint-disable-next-line no-explicit-any
+// const useWs = (useWebSocket as any).default as typeof useWebSocket
+// const useWebSocket = (useWebSocket as any).default 
 import '@xterm/xterm/css/xterm.css'
 import { useLocalStorage } from 'usehooks-ts'
-import { ITerminalAddon, ITerminalInitOnlyOptions, ITerminalOptions, Terminal } from '@xterm/xterm'
+import { type ITerminalAddon, type ITerminalInitOnlyOptions, type ITerminalOptions, Terminal } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
+import { FitAddon } from '@xterm/addon-fit'
 import { SERVER } from './App'
 import clsx from 'clsx'
 
@@ -21,7 +28,7 @@ interface WsRxMessage {
 
 
 
-
+// console.log(typeof useWebSocket, useWebSocket)
 
 
 function useXterm({ addons, options, listeners }: {
@@ -67,6 +74,10 @@ function useXterm({ addons, options, listeners }: {
             refTerm.current.open(refDiv.current)
         }
         refTerm.current.loadAddon(new WebglAddon())
+        // const fitAddon = new FitAddon()
+        // refTerm.current.loadAddon(fitAddon)
+        // fitAddon.fit()
+
         // refTerm.current.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ')
         return () => {
             // refTerm.current.dispose()
@@ -82,6 +93,7 @@ function useXterm({ addons, options, listeners }: {
             }
         }
     }, [listeners?.onSelectionChange])
+
 
     return {
         xtermRef: refDiv,
@@ -284,22 +296,25 @@ export default function Shell() {
                         event: "sh-resize",
                         data: {
                             rows: Math.floor(height / 18),
-                            cols: Math.floor(width / 8),
+                            cols: Math.floor(width / 8 - 6),
+                            // cols: width / 8,
                             height: height,
                             width: width,
                         }
                     })
                     xtermInstance.resize(
                         Math.floor(
-                            width / 8
+                            width / 8 - 6
                             // 160
                             // / (xtermInstance.options.fontSize ?? 16)
                         ),
+                        // width / 8,
                         Math.floor(
                             height / 18
                             // / ((xtermInstance.options.fontSize ?? 16) * (xtermInstance.options.lineHeight ?? 1))
                         )
                     )
+
                 }
                 // entry.contentBoxSize[0].blockSize
                 // entry.contentBoxSize[0].inlineSize

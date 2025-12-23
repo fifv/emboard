@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Activity, lazy, Suspense, useEffect, useState } from 'react'
 import {
     useQuery,
     useMutation,
@@ -86,6 +86,22 @@ function Main() {
                 <label htmlFor="my-drawer-2" className="btn btn-ghost drawer-button lg:hidden">
                     <MdMenu />
                 </label>
+                
+                {/* <Activity mode={ currentPage === 'home' ? 'visible' : 'hidden' }>
+                    <Dashboard />
+                </Activity>
+                <Activity mode={ currentPage === 'files' ? 'visible' : 'hidden' }>
+                    <FileExplorer />
+                </Activity>
+                <Activity mode={ currentPage === 'shell' ? 'visible' : 'hidden' }>
+                    <Suspense fallback={
+                        <div className={ clsx(
+                            'fixed top-16 left-1/2',
+                        ) }>
+                            <span className="loading loading-spinner loading-md" />
+                        </div>
+                    }><Shell /></Suspense>
+                </Activity> */}
 
                 { currentPage === 'home' && <Dashboard /> }
 
@@ -116,7 +132,7 @@ function Main() {
                         <div data-sveltekit-preload-data="" className="bg-base-100 flex sticky top-0 z-20  items-center gap-2 bg-opacity-90 px-4 py-2 backdrop-blur lg:flex shadow-sm">
                             <a href="/" aria-current="page" aria-label="Homepage" className="flex-0 flex items-center btn btn-ghost px-2">
                                 <svg width="32" height="32" viewBox="0 0 415 415" xmlns="http://www.w3.org/2000/svg"><rect x="82.5" y="290" width="250" height="125" rx="62.5" fill="#1AD1A5"></rect><circle cx="207.5" cy="135" r="130" fill="black" fillOpacity=".3"></circle><circle cx="207.5" cy="135" r="125" fill="white"></circle><circle cx="207.5" cy="135" r="56" fill="#FF9903"></circle></svg>
-                                <div className="font-title inline-flex text-lg md:text-2xl ">Dashboard</div>
+                                <div className="font-title inline-flex text-lg md:text-2xl ">EmBoard</div>
                             </a>
                             <div tabIndex={ 0 } role="button" className="link link-hover inline-block font-mono text-xs">0.0.1</div>
                         </div>
@@ -211,7 +227,7 @@ function NetInterface({ iface, type, ip, mac }: {
                             const oldHostname = ip?.replace(/\/\d+$/, "")
                             const newHref = location.href.replace(location.hostname, newHostname ?? '')
                             if (location.hostname === oldHostname) {
-                                // @ts-ignore
+                                // @ts-expect-error hack
                                 document.getElementById('my_modal_1')?.showModal?.()
                                 setInterval(() => {
                                     fetch(newHref).then((v) => {
@@ -223,7 +239,7 @@ function NetInterface({ iface, type, ip, mac }: {
                             }
                             mutate(undefined, {
                                 onError: () => {
-                                    // @ts-ignore
+                                    // @ts-expect-error hack
                                     document.getElementById('my_modal_1')?.close?.()
                                     if (location.hostname !== oldHostname) {
                                         toast.error('修改失败', { theme: 'dark', autoClose: 1500, position: 'bottom-right', })
@@ -285,6 +301,7 @@ function Dashboard() {
 
     const { mutate: mutateSystime, isPending: isPendingSystime } = useMutation({
         mutationFn: async () => {
+            /* UTC Time */
             const res = await fetch(SERVER + `/api/systime?time=${(new Date()).toISOString().replace('T', ' ').slice(0, -5)}`, {
                 method: 'POST',
             })
@@ -301,7 +318,7 @@ function Dashboard() {
         },
         onError: (e) => {
             console.log(e)
-            // @ts-ignore
+            // @ts-expect-error ???
             toast.error('修改失败: ' + e?.error, { theme: 'dark', autoClose: 1500, position: 'bottom-right', })
         }
     })

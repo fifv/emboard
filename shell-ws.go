@@ -36,7 +36,7 @@ func serveWs(r *gin.Context) {
 	t1 := time.Now().UnixMilli()
 	for _, v := range []string{"zsh", "bash", "sh"} {
 		if _, err := exec.LookPath(v); err == nil {
-			cmd = exec.Command(v)
+			cmd = exec.Command(v, "-l")
 			break
 		}
 	}
